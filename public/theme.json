@@ -1,0 +1,57 @@
+{
+  "custom_fonts": [
+    "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+  ],
+  "variables": {
+    "dark": {
+      "--font-sans": "'Outfit', sans-serif",
+      "--font-mono": "'JetBrains Mono', monospace",
+      "--background": "270 47% 7%",
+      "--foreground": "270 30% 95%",
+      "--card": "270 44% 10%",
+      "--card-foreground": "270 30% 95%",
+      "--popover": "270 44% 10%",
+      "--popover-foreground": "270 30% 95%",
+      "--primary": "277 83% 30%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "38 100% 50%",
+      "--secondary-foreground": "0 0% 0%",
+      "--muted": "270 30% 15%",
+      "--muted-foreground": "270 20% 50%",
+      "--accent": "38 100% 50%",
+      "--accent-foreground": "0 0% 0%",
+      "--destructive": "0 72% 60%",
+      "--destructive-foreground": "0 0% 100%",
+      "--border": "270 30% 20%",
+      "--input": "270 30% 20%",
+      "--ring": "277 83% 30%",
+      "--radius": "0.75rem",
+      "--sidebar-background": "270 37% 4%",
+      "--sidebar-foreground": "270 30% 95%",
+      "--sidebar-primary": "277 83% 30%",
+      "--sidebar-primary-foreground": "0 0% 100%",
+      "--sidebar-accent": "38 100% 50%",
+      "--sidebar-accent-foreground": "0 0% 0%",
+      "--sidebar-border": "270 30% 20%",
+      "--sidebar-ring": "277 83% 30%"
+    },
+    "light": {
+      "--font-sans": "'Outfit', sans-serif",
+      "--font-mono": "'JetBrains Mono', monospace",
+      "--background": "0 0% 100%",
+      "--foreground": "270 47% 7%",
+      "--primary": "277 83% 30%",
+      "--primary-foreground": "0 0% 100%",
+      "--secondary": "38 100% 50%",
+      "--secondary-foreground": "0 0% 0%",
+      "--accent": "38 100% 85%",
+      "--accent-foreground": "270 47% 7%",
+      "--muted": "270 10% 92%",
+      "--muted-foreground": "270 10% 40%",
+      "--border": "270 10% 85%",
+      "--input": "270 10% 85%",
+      "--ring": "277 83% 30%",
+      "--radius": "0.75rem"
+    }
+  }
+}

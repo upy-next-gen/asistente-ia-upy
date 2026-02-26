@@ -1,0 +1,19 @@
+/* Fondo oscuro profundo similar al diseño original */
+body {
+  background-color: hsl(270, 47%, 7%) !important;
+}
+
+/* Links en color ámbar */
+.cl-message a {
+  color: #ffba3b !important;
+}
+
+/* Starter chips con estilo UPY */
+.cl-starter {
+  border-color: #382350 !important;
+  background: hsl(270, 44%, 10%) !important;
+}
+.cl-starter:hover {
+  border-color: #FFA300 !important;
+  color: #FFA300 !important;
+}
