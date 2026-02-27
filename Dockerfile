@@ -9,7 +9,7 @@ COPY pyproject.toml uv.lock ./
 RUN uv sync --no-dev --frozen --no-install-project
 
 # Pre-descargar el modelo de embeddings para evitar descarga en cada cold start
-RUN uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('jinaai/jina-embeddings-v5-text-small')"
+RUN uv run python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-m3')"
 
 COPY . .
 
