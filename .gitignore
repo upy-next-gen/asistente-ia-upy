@@ -1,4 +1,11 @@
 venv/
+.venv/
 __pycache__/
 *.pyc
 .env
+.chainlit/.langchain.db
+.chainlit/translations/
+chroma_db/
+docs/
+CLAUDE.md
+PLAN.md
