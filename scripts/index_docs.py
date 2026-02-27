@@ -35,7 +35,7 @@ def main():
 
     # Configurar embeddings locales (gratis, sin API key)
     Settings.embed_model = HuggingFaceEmbedding(
-        model_name="BAAI/bge-small-en-v1.5",
+        model_name="BAAI/bge-m3",
     )
 
     # Inicializar ChromaDB persistente
