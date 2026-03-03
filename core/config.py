@@ -1,0 +1,29 @@
+import os
+from dataclasses import dataclass
+from dotenv import load_dotenv
+
+
+@dataclass
+class Settings:
+    deepseek_api_key: str = ""
+    deepseek_base_url: str = "https://api.deepseek.com"
+    deepseek_model: str = "deepseek-chat"
+    supabase_url: str = ""
+    supabase_key: str = ""
+    embed_model_name: str = "BAAI/bge-small-en-v1.5"
+    chroma_dir: str = ""
+    chroma_collection_name: str = "upy_docs"
+    retriever_top_k: int = 5
+
+    @classmethod
+    def from_env(cls) -> "Settings":
+        load_dotenv()
+        return cls(
+            deepseek_api_key=os.getenv("DEEPSEEK_API_KEY", ""),
+            supabase_url=os.getenv("SUPABASE_URL", ""),
+            supabase_key=os.getenv("SUPABASE_KEY", ""),
+            chroma_dir=os.path.join(os.path.dirname(__file__), "..", "chroma_db"),
+        )
+
+
+settings = Settings.from_env()

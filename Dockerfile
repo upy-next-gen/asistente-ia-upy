@@ -21,7 +21,6 @@ RUN uv sync --no-dev --frozen && \
 ENV HF_HUB_OFFLINE=1
 ENV TRANSFORMERS_OFFLINE=1
 
-# Usar el venv directamente para evitar que uv run re-sincronice al iniciar
 ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
