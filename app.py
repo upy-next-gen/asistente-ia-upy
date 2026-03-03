@@ -26,7 +26,7 @@ supabase = create_client(
 
 # Configurar embeddings locales (HuggingFace, gratis)
 Settings.embed_model = HuggingFaceEmbedding(
-    model_name=os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
+    model_name=os.getenv("EMBEDDING_MODEL")
 )
 
 # Cargar índice vectorial desde ChromaDB
