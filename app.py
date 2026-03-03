@@ -15,7 +15,7 @@ load_dotenv()
 # Inicializamos el cliente de DeepSeek (async para streaming)
 client = AsyncOpenAI(
     api_key=os.getenv("OPENAI_API_KEY"),
-    base_url="https://api.deepseek.com",
+    base_url=os.getenv("LLM_BASE_URL")
 )
 
 # Inicializar Supabase
@@ -26,7 +26,7 @@ supabase = create_client(
 
 # Configurar embeddings locales (HuggingFace, gratis)
 Settings.embed_model = HuggingFaceEmbedding(
-    model_name="BAAI/bge-small-en-v1.5",
+    model_name=os.getenv("EMBEDDING_MODEL", "BAAI/bge-m3")
 )
 
 # Cargar índice vectorial desde ChromaDB
@@ -52,7 +52,6 @@ SYSTEM_PROMPT = (
     "Si la información del contexto no es suficiente para responder, indícalo honestamente."
 )
 
-
 @cl.set_starters
 async def set_starters():
     """Chips de sugerencia iniciales para guiar al usuario."""
@@ -74,7 +73,6 @@ async def set_starters():
         ),
     ]
 
-
 @cl.on_chat_start
 async def on_chat_start():
     """Inicializar la sesión con el historial de mensajes."""
@@ -83,26 +81,15 @@ async def on_chat_start():
         [{"role": "system", "content": SYSTEM_PROMPT}],
     )
 
-    actions = [
-        cl.Action(
-            name="abrir_sugerencias",
-            label="Buzón de Sugerencias",
-            tooltip="¿Qué te gustaría que el Asistente UPY pudiera hacer?",
-            payload={"action": "feedback"},
-        )
-    ]
-    await cl.Message(
-        content="Soy el asistente de inteligencia artificial de la **Universidad Politécnica de Yucatán**. Pregúntame lo que necesites.",
-        actions=actions,
-    ).send()
-
 
 @cl.action_callback("abrir_sugerencias")
 async def handle_feedback_action(action: cl.Action):
     """Manejar el clic en el botón de sugerencias."""
+    
     res = await cl.AskUserMessage(
         content=(
-            "**Buzón de Sugerencias**\n\n"
+            "🟣 **Modo Sugerencias Activado**\n\n"
+            "Ahora estás enviando una sugerencia. "
             "¿Qué te gustaría que el Asistente UPY pudiera hacer? "
             "Ayúdanos a mejorar contándonos tus ideas o problemas."
         ),
@@ -123,7 +110,6 @@ async def handle_feedback_action(action: cl.Action):
                 await cl.Message(
                     content="Hubo un error al guardar tu sugerencia. Inténtalo de nuevo más tarde.",
                 ).send()
-
 
 @cl.on_message
 async def on_message(message: cl.Message):
@@ -171,6 +157,19 @@ async def on_message(message: cl.Message):
 
         message_history.append({"role": "assistant", "content": full_response})
         cl.user_session.set("message_history", message_history)
+        
+        actions = [
+            cl.Action(
+                name="abrir_sugerencias",
+                label="📬 Buzón de Sugerencias",
+                tooltip="¿Qué te gustaría que el Asistente UPY pudiera hacer?",
+                payload={"action": "feedback"},
+            )
+        ]
+        await cl.Message(
+            content="¿Tienes alguna sugerencia para mejorar el asistente?",
+            actions=actions,
+        ).send()
 
     except Exception as e:
         msg.content = f"Error al conectar con el servidor: {e}"
