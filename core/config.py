@@ -14,6 +14,7 @@ class Settings:
     chroma_dir: str = ""
     chroma_collection_name: str = "upy_docs"
     retriever_top_k: int = 5
+    max_history_messages: int = 20
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -25,6 +26,7 @@ class Settings:
             supabase_url=os.getenv("SUPABASE_URL", ""),
             supabase_key=os.getenv("SUPABASE_KEY", ""),
             chroma_dir=os.path.join(os.path.dirname(__file__), "..", "chroma_db"),
+            max_history_messages=int(os.getenv("MAX_HISTORY_MESSAGES", "20")),
         )
 
 

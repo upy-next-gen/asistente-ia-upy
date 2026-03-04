@@ -1,6 +1,7 @@
 import chainlit as cl
 from langfuse import observe
 
+from core.config import settings
 from core.prompts import PromptManager
 from core.rag.retriever import DocumentRetriever
 from core.rag.context import ContextBuilder
@@ -11,6 +12,14 @@ from core.observability.tracing import TracingManager
 retriever = DocumentRetriever()
 chat_service = ChatService()
 feedback_service = FeedbackService()
+
+
+def _trim_history(history: list[dict]) -> list[dict]:
+    system = history[:1]
+    conversation = history[1:]
+    if len(conversation) > settings.max_history_messages:
+        conversation = conversation[-settings.max_history_messages:]
+    return system + conversation
 
 
 @cl.set_starters
@@ -86,6 +95,8 @@ async def on_message(message: cl.Message):
     TracingManager.score("context_length", float(len(context)))
 
     message_history.append({"role": "user", "content": user_message})
+    message_history = _trim_history(message_history)
+    cl.user_session.set("message_history", message_history)
 
     msg = cl.Message(content="")
     await msg.send()
