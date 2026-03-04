@@ -20,6 +20,8 @@ class Settings:
         load_dotenv()
         return cls(
             deepseek_api_key=os.getenv("DEEPSEEK_API_KEY", ""),
+            deepseek_base_url=os.getenv("LLM_BASE_URL", "https://api.deepseek.com"),
+            embed_model_name=os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5"),
             supabase_url=os.getenv("SUPABASE_URL", ""),
             supabase_key=os.getenv("SUPABASE_KEY", ""),
             chroma_dir=os.path.join(os.path.dirname(__file__), "..", "chroma_db"),
