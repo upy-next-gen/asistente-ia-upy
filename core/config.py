@@ -15,6 +15,9 @@ class Settings:
     chroma_collection_name: str = "upy_docs"
     retriever_top_k: int = 5
     max_history_messages: int = 20
+    max_message_length: int = 2000
+    max_suggestion_length: int = 1000
+    llm_timeout: int = 30
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -27,6 +30,9 @@ class Settings:
             supabase_key=os.getenv("SUPABASE_KEY", ""),
             chroma_dir=os.path.join(os.path.dirname(__file__), "..", "chroma_db"),
             max_history_messages=int(os.getenv("MAX_HISTORY_MESSAGES", "20")),
+            max_message_length=int(os.getenv("MAX_MESSAGE_LENGTH", "2000")),
+            max_suggestion_length=int(os.getenv("MAX_SUGGESTION_LENGTH", "1000")),
+            llm_timeout=int(os.getenv("LLM_TIMEOUT", "30")),
         )
 
 
