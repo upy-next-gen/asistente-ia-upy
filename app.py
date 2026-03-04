@@ -1,5 +1,6 @@
 import chainlit as cl
 from langfuse import observe
+
 from core.prompts import PromptManager
 from core.rag.retriever import DocumentRetriever
 from core.rag.context import ContextBuilder
@@ -39,25 +40,14 @@ async def on_chat_start():
         "message_history",
         [{"role": "system", "content": PromptManager.SYSTEM}],
     )
-    actions = [
-        cl.Action(
-            name="abrir_sugerencias",
-            label="Buzón de Sugerencias",
-            tooltip="¿Qué te gustaría que el Asistente UPY pudiera hacer?",
-            payload={"action": "feedback"},
-        )
-    ]
-    await cl.Message(
-        content="Soy el asistente de inteligencia artificial de la **Universidad Politécnica de Yucatán**. Pregúntame lo que necesites.",
-        actions=actions,
-    ).send()
 
 
 @cl.action_callback("abrir_sugerencias")
 async def handle_feedback(action: cl.Action):
     res = await cl.AskUserMessage(
         content=(
-            "**Buzón de Sugerencias**\n\n"
+            "🟣 **Modo Sugerencias Activado**\n\n"
+            "Ahora estás enviando una sugerencia. "
             "¿Qué te gustaría que el Asistente UPY pudiera hacer? "
             "Ayúdanos a mejorar contándonos tus ideas o problemas."
         ),
@@ -111,6 +101,19 @@ async def on_message(message: cl.Message):
         await msg.update()
         message_history.append({"role": "assistant", "content": full_response})
         cl.user_session.set("message_history", message_history)
+
+        actions = [
+            cl.Action(
+                name="abrir_sugerencias",
+                label="📬 Buzón de Sugerencias",
+                tooltip="¿Qué te gustaría que el Asistente UPY pudiera hacer?",
+                payload={"action": "feedback"},
+            )
+        ]
+        await cl.Message(
+            content="¿Tienes alguna sugerencia para mejorar el asistente?",
+            actions=actions,
+        ).send()
 
     except Exception as e:
         msg.content = f"Error al conectar con el servidor: {e}"
