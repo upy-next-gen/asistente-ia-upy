@@ -18,6 +18,8 @@ class Settings:
     max_message_length: int = 2000
     max_suggestion_length: int = 1000
     llm_timeout: int = 30
+    rate_limit_window: int = 60
+    rate_limit_max_requests: int = 10
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -33,6 +35,8 @@ class Settings:
             max_message_length=int(os.getenv("MAX_MESSAGE_LENGTH", "2000")),
             max_suggestion_length=int(os.getenv("MAX_SUGGESTION_LENGTH", "1000")),
             llm_timeout=int(os.getenv("LLM_TIMEOUT", "30")),
+            rate_limit_window=int(os.getenv("RATE_LIMIT_WINDOW", "60")),
+            rate_limit_max_requests=int(os.getenv("RATE_LIMIT_MAX_REQUESTS", "10")),
         )
 
 

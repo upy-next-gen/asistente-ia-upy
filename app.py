@@ -8,10 +8,12 @@ from core.rag.context import ContextBuilder
 from core.llm.chat import ChatService
 from core.feedback.suggestions import FeedbackService
 from core.observability.tracing import TracingManager
+from core.security.rate_limiter import RateLimiter
 
 retriever = DocumentRetriever()
 chat_service = ChatService()
 feedback_service = FeedbackService()
+rate_limiter = RateLimiter()
 
 
 def _trim_history(history: list[dict]) -> list[dict]:
@@ -65,25 +67,45 @@ async def handle_feedback(action: cl.Action):
 
     if res:
         content = res["output"].strip()
-        if content:
-            try:
-                feedback_service.save(content)
-                await cl.Message(
-                    content="Gracias! Tu sugerencia fue guardada correctamente.",
-                ).send()
-            except Exception:
-                await cl.Message(
-                    content="Hubo un error al guardar tu sugerencia. Inténtalo de nuevo más tarde.",
-                ).send()
+        if not content:
+            return
+        if len(content) > settings.max_suggestion_length:
+            await cl.Message(
+                content=f"Tu sugerencia excede el límite de {settings.max_suggestion_length} caracteres. Por favor, resúmela.",
+            ).send()
+            return
+        try:
+            feedback_service.save(content)
+            await cl.Message(
+                content="Gracias! Tu sugerencia fue guardada correctamente.",
+            ).send()
+        except Exception:
+            await cl.Message(
+                content="Hubo un error al guardar tu sugerencia. Inténtalo de nuevo más tarde.",
+            ).send()
 
 
 @cl.on_message
 @observe(name="rag_pipeline")
 async def on_message(message: cl.Message):
+    session_id = cl.context.session.id
+
+    if not rate_limiter.is_allowed(session_id):
+        await cl.Message(
+            content="Has enviado demasiados mensajes. Espera un momento antes de intentar de nuevo.",
+        ).send()
+        return
+
+    if len(message.content) > settings.max_message_length:
+        await cl.Message(
+            content=f"Tu mensaje excede el límite de {settings.max_message_length} caracteres. Por favor, acórtalo.",
+        ).send()
+        return
+
     message_history = cl.user_session.get("message_history")
 
     TracingManager.update_trace(
-        session_id=cl.context.session.id,
+        session_id=session_id,
         metadata={"query": message.content},
     )
 
