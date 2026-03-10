@@ -1,13 +1,13 @@
 import os
+import base64
+
+import numpy as np
 import chromadb
 from langfuse.openai import AsyncOpenAI
 from supabase import create_client
+from perplexity import Perplexity
 import chainlit as cl
 from dotenv import load_dotenv
-from llama_index.core import VectorStoreIndex
-from llama_index.core.settings import Settings
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
-from llama_index.vector_stores.chroma import ChromaVectorStore
 
 # Cargar las variables de entorno
 load_dotenv()
@@ -24,18 +24,32 @@ supabase = create_client(
     os.getenv("SUPABASE_KEY", ""),
 )
 
-# Configurar embeddings locales (HuggingFace, gratis)
-Settings.embed_model = HuggingFaceEmbedding(
-    model_name=os.getenv("EMBEDDING_MODEL")
-)
+# Cliente de Perplexity para embeddings de queries
+pplx_client = Perplexity(api_key=os.getenv("PERPLEXITY_API_KEY"))
+EMBEDDING_MODEL = os.getenv("EMBEDDING_MODEL")
 
-# Cargar índice vectorial desde ChromaDB
+# Cargar colección ChromaDB con embeddings de Perplexity
 CHROMA_DIR = os.path.join(os.path.dirname(__file__), "chroma_db")
 chroma_client = chromadb.PersistentClient(path=CHROMA_DIR)
-chroma_collection = chroma_client.get_or_create_collection("upy_docs")
-vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
-index = VectorStoreIndex.from_vector_store(vector_store)
-retriever = index.as_retriever(similarity_top_k=5)
+chroma_collection = chroma_client.get_or_create_collection(
+    name="upy_docs_pplx",
+    metadata={"hnsw:space": "cosine"},
+)
+
+
+def decode_embedding(b64_string: str) -> list[float]:
+    """Decodificar embedding base64 int8 a lista de floats."""
+    raw = base64.b64decode(b64_string)
+    return np.frombuffer(raw, dtype=np.int8).astype(np.float32).tolist()
+
+
+def embed_query(query_text: str) -> list[float]:
+    """Generar embedding para una consulta usando Perplexity API."""
+    response = pplx_client.contextualized_embeddings.create(
+        input=[[query_text]],
+        model=EMBEDDING_MODEL,
+    )
+    return decode_embedding(response.data[0].data[0].embedding)
 
 # System prompt con instrucciones para usar el contexto de documentos
 SYSTEM_PROMPT = (
@@ -116,14 +130,20 @@ async def on_message(message: cl.Message):
     """Procesar cada mensaje del usuario con RAG + DeepSeek (streaming)."""
     message_history = cl.user_session.get("message_history")
 
-    # Buscar contexto relevante en los documentos
-    nodes = retriever.retrieve(message.content)
+    # Generar embedding de la consulta y buscar en ChromaDB
+    query_embedding = embed_query(message.content)
+    results = chroma_collection.query(
+        query_embeddings=[query_embedding],
+        n_results=5,
+        include=["documents", "metadatas"],
+    )
+
     context = ""
-    if nodes:
+    if results and results["documents"] and results["documents"][0]:
         context_parts = []
-        for node in nodes:
-            source = node.metadata.get("file_name", "documento")
-            context_parts.append(f"[Fuente: {source}]\n{node.text}")
+        for doc_text, metadata in zip(results["documents"][0], results["metadatas"][0]):
+            source = metadata.get("file_name", "documento")
+            context_parts.append(f"[Fuente: {source}]\n{doc_text}")
         context = "\n\n---\n\n".join(context_parts)
 
     # Construir el mensaje del usuario con contexto
