@@ -11,6 +11,7 @@ class PromptManager:
         "IMPORTANTE: Se te proporcionará contexto de documentos oficiales de la UPY. "
         "Usa esta información para dar respuestas precisas y fundamentadas. "
         "Si la información del contexto no es suficiente para responder, indícalo honestamente."
+
     )
 
     @staticmethod
