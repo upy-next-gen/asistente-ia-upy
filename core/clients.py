@@ -1,8 +1,6 @@
 import chromadb
 from langfuse.openai import AsyncOpenAI
 from supabase import create_client, Client
-from llama_index.core.settings import Settings as LlamaSettings
-from llama_index.embeddings.huggingface import HuggingFaceEmbedding
 from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from core.config import settings
@@ -41,11 +39,6 @@ class ClientManager:
             )
             self._vector_store = ChromaVectorStore(chroma_collection=collection)
         return self._vector_store
-
-    def init_embeddings(self) -> None:
-        LlamaSettings.embed_model = HuggingFaceEmbedding(
-            model_name=settings.embed_model_name,
-        )
 
 
 clients = ClientManager()

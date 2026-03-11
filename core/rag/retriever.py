@@ -1,19 +1,53 @@
-from langfuse import observe
-from llama_index.core import VectorStoreIndex
-from llama_index.core.schema import NodeWithScore
+import base64
 
-from core.clients import clients
+import chromadb
+import numpy as np
+from langfuse import observe
+from llama_index.core.schema import NodeWithScore, TextNode
+from perplexity import Perplexity
+
 from core.config import settings
 
 
 class DocumentRetriever:
     def __init__(self):
-        clients.init_embeddings()
-        index = VectorStoreIndex.from_vector_store(clients.vector_store)
-        self._retriever = index.as_retriever(
-            similarity_top_k=settings.retriever_top_k,
+        self._pplx_client = Perplexity(api_key=settings.perplexity_api_key)
+        chroma_client = chromadb.PersistentClient(path=settings.chroma_dir)
+        self._collection = chroma_client.get_or_create_collection(
+            name=settings.chroma_collection_name,
+            metadata={"hnsw:space": "cosine"},
         )
+
+    def _embed_query(self, query: str) -> list[float]:
+        response = self._pplx_client.contextualized_embeddings.create(
+            input=[[query]],
+            model=settings.embed_model_name,
+        )
+        raw = base64.b64decode(response.data[0].data[0].embedding)
+        return np.frombuffer(raw, dtype=np.int8).astype(np.float32).tolist()
 
     @observe(name="document_retrieval")
     def retrieve(self, query: str) -> list[NodeWithScore]:
-        return self._retriever.retrieve(query)
+        embedding = self._embed_query(query)
+        results = self._collection.query(
+            query_embeddings=[embedding],
+            n_results=settings.retriever_top_k,
+            include=["documents", "metadatas", "distances"],
+        )
+
+        nodes = []
+        if not results or not results["documents"] or not results["documents"][0]:
+            return nodes
+
+        for text, metadata, distance in zip(
+            results["documents"][0],
+            results["metadatas"][0],
+            results["distances"][0],
+        ):
+            node = NodeWithScore(
+                node=TextNode(text=text, metadata=metadata),
+                score=1.0 - distance,
+            )
+            nodes.append(node)
+
+        return nodes
