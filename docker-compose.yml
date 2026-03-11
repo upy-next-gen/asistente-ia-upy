@@ -8,3 +8,4 @@ services:
     volumes:
       - ./docs:/app/docs
       - ./chroma_db:/app/chroma_db
+      
