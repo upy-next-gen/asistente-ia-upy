@@ -4,6 +4,7 @@ __pycache__/
 *.pyc
 .env
 .git/
-chroma_db/
+docs/
+scripts/
 CLAUDE.md
 PLAN.md
