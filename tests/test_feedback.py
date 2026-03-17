@@ -26,5 +26,3 @@ class TestFeedbackService:
 
         with pytest.raises(RuntimeError, match="Supabase no está configurado"):
             service.save("algo")
-
-            

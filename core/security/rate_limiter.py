@@ -24,6 +24,3 @@ class RateLimiter:
 
         self._sessions[session_id].append(now)
         return True
-    
-
-    

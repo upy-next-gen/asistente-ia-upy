@@ -97,6 +97,4 @@ class TestClientManager:
             first = manager.vector_store
             second = manager.vector_store
             assert first is second
-            assert mock_vs.call_count == 1
-
-            
+            assert mock_vs.call_count == 1      

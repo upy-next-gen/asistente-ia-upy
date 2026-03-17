@@ -51,6 +51,3 @@ class DocumentRetriever:
             nodes.append(node)
 
         return nodes
-    
-
-    

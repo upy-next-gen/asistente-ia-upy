@@ -37,6 +37,4 @@ class TestTracingManager:
                 name="retrieval_nodes",
                 value=5.0,
                 comment="test",
-            )
-
-            
+            ) 

@@ -33,6 +33,4 @@ class TestContextBuilder:
         node.metadata = {}
         node.text = "Sin fuente"
         result = ContextBuilder.build([node])
-        assert "[Fuente: documento]" in result
-
-        
+        assert "[Fuente: documento]" in result 

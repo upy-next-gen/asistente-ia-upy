@@ -142,6 +142,4 @@ class TestDocumentRetriever:
 
         retriever.retrieve("test")
         call_kwargs = mock_collection.query.call_args
-        assert call_kwargs.kwargs["n_results"] == 5
-
-        
+        assert call_kwargs.kwargs["n_results"] == 5    

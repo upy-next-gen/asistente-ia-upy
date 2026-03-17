@@ -117,5 +117,3 @@ class TestSettings:
         s = Settings.from_env()
         assert os.path.isabs(s.CHROMA_DIR)
         assert s.CHROMA_DIR.endswith("chroma_db")
-
-        

@@ -21,6 +21,3 @@ class ChatService:
             ),
             timeout=self._timeout,
         )
-    
-
-    

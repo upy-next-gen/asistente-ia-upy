@@ -100,5 +100,3 @@ class TestChatService:
 
         call_kwargs = mock_llm.chat.completions.create.call_args
         assert call_kwargs.kwargs["stream"] is True
-
-        

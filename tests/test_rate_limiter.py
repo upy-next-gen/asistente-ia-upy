@@ -55,5 +55,3 @@ class TestRateLimiter:
             assert "session-new" not in limiter._sessions
             limiter.is_allowed("session-new")
             assert "session-new" in limiter._sessions
-
-            
