@@ -12,9 +12,10 @@ COPY . .
 
 RUN uv sync --no-dev --frozen
 
-# Usar el venv directamente para evitar que uv run re-sincronice al iniciar
 ENV PATH="/app/.venv/bin:$PATH"
 
 EXPOSE 8000
 
-CMD ["chainlit", "run", "app.py", "--host", "0.0.0.0", "--port", "8000", "-h"]
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+CMD ["./entrypoint.sh"]
