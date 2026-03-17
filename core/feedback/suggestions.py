@@ -10,4 +10,5 @@ class FeedbackService:
             raise RuntimeError("Supabase no está configurado")
         self._supabase.table("sugerencias").insert(
             {"contenido": content},
-        ).execute()   
+        ).execute()
+          

@@ -13,4 +13,5 @@ class TestPromptManager:
 
     def test_build_user_message_without_context(self):
         result = PromptManager.build_user_message("¿Qué carreras hay?", "")
-        assert result == "¿Qué carreras hay?"     
+        assert result == "¿Qué carreras hay?"   
+          
