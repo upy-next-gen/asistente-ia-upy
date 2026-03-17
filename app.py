@@ -19,8 +19,8 @@ rate_limiter = RateLimiter()
 def _trim_history(history: list[dict]) -> list[dict]:
     system = history[:1]
     conversation = history[1:]
-    if len(conversation) > settings.max_history_messages:
-        conversation = conversation[-settings.max_history_messages:]
+    if len(conversation) > settings.MAX_HISTORY_MESSAGES:
+        conversation = conversation[-settings.MAX_HISTORY_MESSAGES:]
     return system + conversation
 
 
@@ -69,9 +69,9 @@ async def handle_feedback(action: cl.Action):
         content = res["output"].strip()
         if not content:
             return
-        if len(content) > settings.max_suggestion_length:
+        if len(content) > settings.MAX_SUGGESTION_LENGTH:
             await cl.Message(
-                content=f"Tu sugerencia excede el límite de {settings.max_suggestion_length} caracteres. Por favor, resúmela.",
+                content=f"Tu sugerencia excede el límite de {settings.MAX_SUGGESTION_LENGTH} caracteres. Por favor, resúmela.",
             ).send()
             return
         try:
@@ -96,9 +96,9 @@ async def on_message(message: cl.Message):
         ).send()
         return
 
-    if len(message.content) > settings.max_message_length:
+    if len(message.content) > settings.MAX_MESSAGE_LENGTH:
         await cl.Message(
-            content=f"Tu mensaje excede el límite de {settings.max_message_length} caracteres. Por favor, acórtalo.",
+            content=f"Tu mensaje excede el límite de {settings.MAX_MESSAGE_LENGTH} caracteres. Por favor, acórtalo.",
         ).send()
         return
 
@@ -152,3 +152,4 @@ async def on_message(message: cl.Message):
         msg.content = f"Error al conectar con el servidor: {e}"
         await msg.update()
 
+        

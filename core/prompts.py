@@ -22,3 +22,5 @@ class PromptManager:
                 f"---\n\nPregunta del usuario: {query}"
             )
         return query
+    
+    

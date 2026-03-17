@@ -51,3 +51,6 @@ class DocumentIndexer:
 
 if __name__ == "__main__":
     DocumentIndexer(DOCS_DIR, CHROMA_DIR).run()
+
+
+    

@@ -11,3 +11,5 @@ class FeedbackService:
         self._supabase.table("sugerencias").insert(
             {"contenido": content},
         ).execute()
+
+        

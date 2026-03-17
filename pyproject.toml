@@ -17,6 +17,24 @@ dependencies = [
     "numpy",
 ]
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.24.0",
+    "pytest-cov>=5.0.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["core"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+
 [tool.uv.sources]
 torch = { index = "pytorch-cpu" }
 

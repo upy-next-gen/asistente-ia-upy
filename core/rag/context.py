@@ -13,3 +13,5 @@ class ContextBuilder:
             source = node.metadata.get("file_name", "documento")
             parts.append(f"[Fuente: {source}]\n{node.text}")
         return "\n\n---\n\n".join(parts)
+
+

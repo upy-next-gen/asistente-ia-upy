@@ -16,29 +16,31 @@ class ClientManager:
     def llm(self) -> AsyncOpenAI:
         if self._llm_client is None:
             self._llm_client = AsyncOpenAI(
-                api_key=settings.deepseek_api_key,
-                base_url=settings.deepseek_base_url,
+                api_key=settings.OPENAI_API_KEY,
+                base_url=settings.LLM_BASE_URL,
             )
         return self._llm_client
 
     @property
     def supabase(self) -> Client | None:
-        if self._supabase is None and settings.supabase_url and settings.supabase_key:
+        if self._supabase is None and settings.SUPABASE_URL and settings.SUPABASE_KEY:
             self._supabase = create_client(
-                settings.supabase_url,
-                settings.supabase_key,
+                settings.SUPABASE_URL,
+                settings.SUPABASE_KEY,
             )
         return self._supabase
 
     @property
     def vector_store(self) -> ChromaVectorStore:
         if self._vector_store is None:
-            chroma_client = chromadb.PersistentClient(path=settings.chroma_dir)
+            chroma_client = chromadb.PersistentClient(path=settings.CHROMA_DIR)
             collection = chroma_client.get_or_create_collection(
-                settings.chroma_collection_name,
+                settings.CHROMA_COLLECTION_NAME,
             )
             self._vector_store = ChromaVectorStore(chroma_collection=collection)
         return self._vector_store
 
 
 clients = ClientManager()
+
+

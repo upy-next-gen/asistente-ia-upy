@@ -11,17 +11,17 @@ from core.config import settings
 
 class DocumentRetriever:
     def __init__(self):
-        self._pplx_client = Perplexity(api_key=settings.perplexity_api_key)
-        chroma_client = chromadb.PersistentClient(path=settings.chroma_dir)
+        self._pplx_client = Perplexity(api_key=settings.PERPLEXITY_API_KEY)
+        chroma_client = chromadb.PersistentClient(path=settings.CHROMA_DIR)
         self._collection = chroma_client.get_or_create_collection(
-            name=settings.chroma_collection_name,
+            name=settings.CHROMA_COLLECTION_NAME,
             metadata={"hnsw:space": "cosine"},
         )
 
     def _embed_query(self, query: str) -> list[float]:
         response = self._pplx_client.contextualized_embeddings.create(
             input=[[query]],
-            model=settings.embed_model_name,
+            model=settings.EMBEDDING_MODEL,
         )
         raw = base64.b64decode(response.data[0].data[0].embedding)
         return np.frombuffer(raw, dtype=np.int8).astype(np.float32).tolist()
@@ -31,7 +31,7 @@ class DocumentRetriever:
         embedding = self._embed_query(query)
         results = self._collection.query(
             query_embeddings=[embedding],
-            n_results=settings.retriever_top_k,
+            n_results=settings.RETRIEVER_TOP_K,
             include=["documents", "metadatas", "distances"],
         )
 
@@ -51,3 +51,6 @@ class DocumentRetriever:
             nodes.append(node)
 
         return nodes
+    
+
+    

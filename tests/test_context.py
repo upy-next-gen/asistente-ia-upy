@@ -34,3 +34,5 @@ class TestContextBuilder:
         node.text = "Sin fuente"
         result = ContextBuilder.build([node])
         assert "[Fuente: documento]" in result
+
+        

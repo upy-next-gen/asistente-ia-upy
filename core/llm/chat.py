@@ -8,8 +8,8 @@ from core.config import settings
 class ChatService:
     def __init__(self):
         self._client = clients.llm
-        self._model = settings.deepseek_model
-        self._timeout = settings.llm_timeout
+        self._model = settings.LLM_MODEL
+        self._timeout = settings.LLM_TIMEOUT
 
     @observe(name="llm_stream")
     async def stream(self, messages: list[dict]) -> object:
@@ -21,3 +21,6 @@ class ChatService:
             ),
             timeout=self._timeout,
         )
+    
+
+    
