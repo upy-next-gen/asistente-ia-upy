@@ -1,0 +1,2 @@
+"""Supabase pgvector integration package."""
+
