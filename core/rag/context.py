@@ -1,17 +1,17 @@
 from langfuse import observe
-from llama_index.core.schema import NodeWithScore
 
 
 class ContextBuilder:
     @staticmethod
     @observe(name="context_building")
-    def build(nodes: list[NodeWithScore]) -> str:
-        if not nodes:
+    def build(rows: list[dict]) -> str:
+        if not rows:
             return ""
         parts = []
-        for node in nodes:
-            source = node.metadata.get("file_name", "documento")
-            parts.append(f"[Fuente: {source}]\n{node.text}")
+        for row in rows:
+            source = row.get("source_file_name", "documento")
+            text = row.get("content", "")
+            parts.append(f"[Fuente: {source}]\n{text}")
         return "\n\n---\n\n".join(parts)
 
 

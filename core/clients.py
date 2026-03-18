@@ -1,7 +1,5 @@
-import chromadb
 from langfuse.openai import AsyncOpenAI
 from supabase import create_client, Client
-from llama_index.vector_stores.chroma import ChromaVectorStore
 
 from core.config import settings
 
@@ -10,7 +8,6 @@ class ClientManager:
     def __init__(self):
         self._llm_client: AsyncOpenAI | None = None
         self._supabase: Client | None = None
-        self._vector_store: ChromaVectorStore | None = None
 
     @property
     def llm(self) -> AsyncOpenAI:
@@ -30,17 +27,14 @@ class ClientManager:
             )
         return self._supabase
 
-    @property
-    def vector_store(self) -> ChromaVectorStore:
-        if self._vector_store is None:
-            chroma_client = chromadb.PersistentClient(path=settings.CHROMA_DIR)
-            collection = chroma_client.get_or_create_collection(
-                settings.CHROMA_COLLECTION_NAME,
-            )
-            self._vector_store = ChromaVectorStore(chroma_collection=collection)
-        return self._vector_store
-
 
 clients = ClientManager()
+
+
+def get_supabase_client() -> Client:
+    supabase = clients.supabase
+    if supabase is None:
+        raise RuntimeError("Supabase no está configurado. Revisa SUPABASE_URL y SUPABASE_KEY.")
+    return supabase
 
 
