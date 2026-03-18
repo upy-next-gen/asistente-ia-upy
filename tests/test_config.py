@@ -13,9 +13,11 @@ class TestSettings:
         assert s.SUPABASE_URL == ""
         assert s.SUPABASE_KEY == ""
         assert s.PERPLEXITY_API_KEY == ""
-        assert s.EMBEDDING_MODEL == ""
-        assert s.CHROMA_DIR == ""
-        assert s.CHROMA_COLLECTION_NAME == ""
+        assert s.EMBEDDING_MODEL == "pplx-embed-context-v1-0.6b"
+        assert s.MIN_SIMILARITY == 0.3
+        assert s.EMBEDDING_DIM == 1024
+        assert s.SAFE_BATCH_SIZE == 200
+        assert s.MAX_CHUNKS_PER_REQUEST == 20
         assert s.RETRIEVER_TOP_K == 5
         assert s.MAX_HISTORY_MESSAGES == 20
         assert s.MAX_MESSAGE_LENGTH == 2000
@@ -30,9 +32,11 @@ class TestSettings:
         "LLM_MODEL": "deepseek-chat",
         "PERPLEXITY_API_KEY": "pplx-test",
         "EMBEDDING_MODEL": "pplx-embed-context-v1-0.6b",
-        "CHROMA_COLLECTION_NAME": "upy_docs_pplx",
         "SUPABASE_URL": "https://test.supabase.co",
         "SUPABASE_KEY": "sb-key",
+        "MIN_SIMILARITY": "0.4",
+        "EMBEDDING_DIM": "1024",
+        "SAFE_BATCH_SIZE": "250",
     })
     def test_from_env_full(self):
         s = Settings.from_env()
@@ -41,10 +45,11 @@ class TestSettings:
         assert s.LLM_MODEL == "deepseek-chat"
         assert s.PERPLEXITY_API_KEY == "pplx-test"
         assert s.EMBEDDING_MODEL == "pplx-embed-context-v1-0.6b"
-        assert s.CHROMA_COLLECTION_NAME == "upy_docs_pplx"
         assert s.SUPABASE_URL == "https://test.supabase.co"
         assert s.SUPABASE_KEY == "sb-key"
-        assert s.CHROMA_DIR != ""
+        assert s.MIN_SIMILARITY == 0.4
+        assert s.EMBEDDING_DIM == 1024
+        assert s.SAFE_BATCH_SIZE == 250
 
     @patch.dict(os.environ, {
         "OPENAI_API_KEY": "test-key",
@@ -52,20 +57,8 @@ class TestSettings:
         "LLM_MODEL": "deepseek-chat",
         "PERPLEXITY_API_KEY": "pplx-test",
         "EMBEDDING_MODEL": "pplx-embed-context-v1-0.6b",
-        "CHROMA_COLLECTION_NAME": "upy_docs_pplx",
-    })
-    def test_from_env_supabase_optional(self):
-        s = Settings.from_env()
-        assert s.SUPABASE_URL == ""
-        assert s.SUPABASE_KEY == ""
-
-    @patch.dict(os.environ, {
-        "OPENAI_API_KEY": "test-key",
-        "LLM_BASE_URL": "https://api.deepseek.com",
-        "LLM_MODEL": "deepseek-chat",
-        "PERPLEXITY_API_KEY": "pplx-test",
-        "EMBEDDING_MODEL": "pplx-embed-context-v1-0.6b",
-        "CHROMA_COLLECTION_NAME": "upy_docs_pplx",
+        "SUPABASE_URL": "https://test.supabase.co",
+        "SUPABASE_KEY": "sb-key",
         "RETRIEVER_TOP_K": "10",
         "MAX_HISTORY_MESSAGES": "30",
         "MAX_MESSAGE_LENGTH": "5000",
@@ -100,6 +93,7 @@ class TestSettings:
     @patch.dict(os.environ, {
         "OPENAI_API_KEY": "test-key",
         "LLM_BASE_URL": "https://api.deepseek.com",
+        "LLM_MODEL": "deepseek-chat",
     }, clear=True)
     def test_from_env_missing_perplexity_key_raises(self, mock_dotenv):
         with pytest.raises(EnvironmentError, match="PERPLEXITY_API_KEY"):
@@ -111,10 +105,11 @@ class TestSettings:
         "LLM_MODEL": "deepseek-chat",
         "PERPLEXITY_API_KEY": "pplx-test",
         "EMBEDDING_MODEL": "pplx-embed-context-v1-0.6b",
-        "CHROMA_COLLECTION_NAME": "upy_docs_pplx",
+        "SUPABASE_URL": "https://test.supabase.co",
+        "SUPABASE_KEY": "sb-key",
     })
-    def test_chroma_dir_is_absolute_path(self):
+    def test_from_env_requires_supabase(self):
         s = Settings.from_env()
-        assert os.path.isabs(s.CHROMA_DIR)
-        assert s.CHROMA_DIR.endswith("chroma_db")
+        assert s.SUPABASE_URL == "https://test.supabase.co"
+        assert s.SUPABASE_KEY == "sb-key"
         
