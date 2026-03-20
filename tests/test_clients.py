@@ -1,5 +1,6 @@
+import pytest
 from unittest.mock import patch, MagicMock
-from core.clients import ClientManager
+from core.clients import ClientManager, get_supabase_client
 
 
 class TestClientManager:
@@ -70,32 +71,15 @@ class TestClientManager:
             assert first is second
             assert mock_create.call_count == 1
 
-    def test_vector_store_lazy_init(self):
-        with patch("core.clients.chromadb") as mock_chroma, \
-             patch("core.clients.ChromaVectorStore") as mock_vs, \
-             patch("core.clients.settings") as mock_settings:
-            mock_settings.CHROMA_DIR = "/tmp/chroma"
-            mock_settings.CHROMA_COLLECTION_NAME = "upy_docs_pplx"
-            mock_client = MagicMock()
-            mock_chroma.PersistentClient.return_value = mock_client
-            mock_vs.return_value = MagicMock()
-            manager = ClientManager()
-            assert manager._vector_store is None
-            store = manager.vector_store
-            assert store is not None
-            mock_chroma.PersistentClient.assert_called_once_with(path="/tmp/chroma")
+    @patch("core.clients.clients")
+    def test_get_supabase_client_raises_if_not_configured(self, mock_clients):
+        mock_clients.supabase = None
+        with pytest.raises(RuntimeError, match="Supabase no está configurado"):
+            get_supabase_client()
 
-    def test_vector_store_returns_same_instance(self):
-        with patch("core.clients.chromadb") as mock_chroma, \
-             patch("core.clients.ChromaVectorStore") as mock_vs, \
-             patch("core.clients.settings") as mock_settings:
-            mock_settings.CHROMA_DIR = "/tmp/chroma"
-            mock_settings.CHROMA_COLLECTION_NAME = "upy_docs_pplx"
-            mock_chroma.PersistentClient.return_value = MagicMock()
-            mock_vs.return_value = MagicMock()
-            manager = ClientManager()
-            first = manager.vector_store
-            second = manager.vector_store
-            assert first is second
-            assert mock_vs.call_count == 1   
+    @patch("core.clients.clients")
+    def test_get_supabase_client_returns_client(self, mock_clients):
+        client = MagicMock()
+        mock_clients.supabase = client
+        assert get_supabase_client() is client
                

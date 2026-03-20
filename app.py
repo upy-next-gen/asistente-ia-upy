@@ -1,5 +1,6 @@
 import chainlit as cl
 from langfuse import observe
+from perplexity import Perplexity
 
 from core.config import settings
 from core.prompts import PromptManager
@@ -9,11 +10,21 @@ from core.llm.chat import ChatService
 from core.feedback.suggestions import FeedbackService
 from core.observability.tracing import TracingManager
 from core.security.rate_limiter import RateLimiter
+from core.supabase_vector_db.indexing_utils import decode_embedding
 
 retriever = DocumentRetriever()
 chat_service = ChatService()
 feedback_service = FeedbackService()
 rate_limiter = RateLimiter()
+pplx_client = Perplexity(api_key=settings.PERPLEXITY_API_KEY)
+
+
+def embed_query(query_text: str) -> list[float]:
+    response = pplx_client.contextualized_embeddings.create(
+        input=[[query_text]],
+        model=settings.EMBEDDING_MODEL,
+    )
+    return decode_embedding(response.data[0].data[0].embedding)
 
 
 def _trim_history(history: list[dict]) -> list[dict]:
@@ -109,11 +120,12 @@ async def on_message(message: cl.Message):
         metadata={"query": message.content},
     )
 
-    nodes = retriever.retrieve(message.content)
-    context = ContextBuilder.build(nodes)
+    query_embedding = embed_query(message.content)
+    rows = retriever.retrieve(query_embedding, top_k=settings.RETRIEVER_TOP_K)
+    context = ContextBuilder.build(rows)
     user_message = PromptManager.build_user_message(message.content, context)
 
-    TracingManager.score("retrieval_nodes", float(len(nodes)))
+    TracingManager.score("retrieval_nodes", float(len(rows)))
     TracingManager.score("context_length", float(len(context)))
 
     message_history.append({"role": "user", "content": user_message})
