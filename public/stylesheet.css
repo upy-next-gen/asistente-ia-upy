@@ -50,4 +50,3 @@ html.light img[src*="logo_dark.png"] {
   content: url("/public/logo_light.png");
 }
 
-/* Added a new line at the end of the file */
