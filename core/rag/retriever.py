@@ -16,3 +16,4 @@ class DocumentRetriever:
             match_count=match_count,
             min_similarity=settings.MIN_SIMILARITY,
         )
+        

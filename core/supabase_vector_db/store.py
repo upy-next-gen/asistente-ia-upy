@@ -1,13 +1,13 @@
 from typing import Any
 
-from core.config import EMBEDDING_DIM
+from core.config import settings
 
 
 class SupabaseVectorStore:
     def __init__(self, supabase_client):
         self._supabase_client = supabase_client
 
-    def validate_embedding(self, embedding: list[float], expected_dim: int = EMBEDDING_DIM) -> None:
+    def validate_embedding(self, embedding: list[float], expected_dim: int = settings.EMBEDDING_DIM) -> None:
         if len(embedding) != expected_dim:
             raise ValueError(
                 f"Embedding con dimension invalida: {len(embedding)}. Esperada: {expected_dim}."

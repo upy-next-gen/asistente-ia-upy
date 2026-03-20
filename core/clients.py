@@ -36,5 +36,3 @@ def get_supabase_client() -> Client:
     if supabase is None:
         raise RuntimeError("Supabase no está configurado. Revisa SUPABASE_URL y SUPABASE_KEY.")
     return supabase
-
-

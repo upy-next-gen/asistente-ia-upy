@@ -16,7 +16,7 @@ from llama_index.core import SimpleDirectoryReader
 from perplexity import Perplexity
 
 from core.clients import get_supabase_client
-from core.config import MAX_CHUNKS_PER_REQUEST, SAFE_BATCH_SIZE, settings
+from core.config import settings
 from core.supabase_vector_db.indexing_utils import build_metadata_rows, decode_embedding
 
 DOCS_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "docs"))
@@ -91,7 +91,7 @@ def upsert_metadata_rows(supabase_client, metadata_rows: list[dict]) -> dict[str
     return mapping
 
 
-def upsert_document_chunks(supabase_client, chunk_rows: list[dict], batch_size: int = SAFE_BATCH_SIZE) -> None:
+def upsert_document_chunks(supabase_client, chunk_rows: list[dict], batch_size: int = settings.SAFE_BATCH_SIZE) -> None:
     if batch_size < 1:
         raise ValueError("batch_size debe ser mayor o igual a 1.")
     if not chunk_rows:
@@ -201,11 +201,11 @@ def main():
 
     request_groups = []
     for chunks, file_name in zip(grouped_chunks, file_order):
-        if len(chunks) <= MAX_CHUNKS_PER_REQUEST:
+        if len(chunks) <= settings.MAX_CHUNKS_PER_REQUEST:
             request_groups.append((chunks, file_name, 0))
             continue
-        for start in range(0, len(chunks), MAX_CHUNKS_PER_REQUEST):
-            request_groups.append((chunks[start : start + MAX_CHUNKS_PER_REQUEST], file_name, start))
+        for start in range(0, len(chunks), settings.MAX_CHUNKS_PER_REQUEST):
+            request_groups.append((chunks[start : start + settings.MAX_CHUNKS_PER_REQUEST], file_name, start))
 
     total_chunks = sum(len(group[0]) for group in request_groups)
     logger.info(
@@ -267,7 +267,7 @@ def main():
     upsert_document_chunks(
         supabase_client=supabase_client,
         chunk_rows=all_rows,
-        batch_size=SAFE_BATCH_SIZE,
+        batch_size=settings.SAFE_BATCH_SIZE,
     )
 
     logger.info("Indexacion completada.")
