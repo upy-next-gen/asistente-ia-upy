@@ -7,6 +7,7 @@ __pycache__/
 .chainlit/translations/
 chroma_db/
 docs/
+logs/
 CLAUDE.md
 PLAN.md
 **/.DS_Store

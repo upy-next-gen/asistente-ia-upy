@@ -23,6 +23,7 @@ class Settings:
     LLM_TIMEOUT: int = 30
     RATE_LIMIT_WINDOW: int = 60
     RATE_LIMIT_MAX_REQUESTS: int = 10
+    ENV: str = ""
     
     @classmethod
     def from_env(cls) -> "Settings":
@@ -35,12 +36,13 @@ class Settings:
             SUPABASE_KEY=os.getenv("SUPABASE_KEY"),
             PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY"),
             EMBEDDING_MODEL=os.getenv("EMBEDDING_MODEL"),
+            ENV=os.getenv("ENV"),
         )
 
         missing_str = [
             key for key in (
                 "OPENAI_API_KEY", "LLM_BASE_URL", "LLM_MODEL",
-                "PERPLEXITY_API_KEY", "EMBEDDING_MODEL", "SUPABASE_URL", "SUPABASE_KEY",
+                "PERPLEXITY_API_KEY", "EMBEDDING_MODEL", "SUPABASE_URL", "SUPABASE_KEY", "ENV",
             )
             if not getattr(instance, key)
         ]
