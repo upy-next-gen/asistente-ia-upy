@@ -20,7 +20,7 @@ persist_user_env = false
 mask_user_env = false
 
 # Authorized origins
-allow_origins = ["*"]
+allow_origins = ["https://asistente.upy.edu.mx", "http://localhost:8000"]
 
 [features]
 # Process and display HTML in messages. This can be a security risk (see https://stackoverflow.com/questions/19603097/why-is-it-dangerous-to-render-user-generated-html-or-javascript)
@@ -53,19 +53,17 @@ reaction_on_message_received = false
 
 # Authorize users to spontaneously upload files with messages
 [features.spontaneous_file_upload]
-    enabled = true
-    # Define accepted file types using MIME types
-    # Examples:
-    # 1. For specific file types:
-    #    accept = ["image/jpeg", "image/png", "application/pdf"]
-    # 2. For all files of certain type:
-    #    accept = ["image/*", "audio/*", "video/*"]
-    # 3. For specific file extensions:
-    #    accept = { "application/octet-stream" = [".xyz", ".pdb"] }
-    # Note: Using "*/*" is not recommended as it may cause browser warnings
-    accept = ["*/*"]
-    max_files = 20
-    max_size_mb = 500
+    # SECURITY: File uploads disabled. The assistant does not process user-uploaded
+    # files. To re-enable, set enabled = true and configure accept, max_files,
+    # and max_size_mb with restrictive values. Example:
+    #   enabled = true
+    #   accept = ["application/pdf", "text/plain", "text/markdown"]
+    #   max_files = 3
+    #   max_size_mb = 20
+    enabled = false
+    accept = ["application/pdf", "text/plain", "text/markdown"]
+    max_files = 3
+    max_size_mb = 20
 
 [features.audio]
     # Enable audio features
