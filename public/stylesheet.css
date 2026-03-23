@@ -1,19 +1,52 @@
-/* Fondo oscuro profundo similar al diseño original */
-body {
+/* ===================== DARK THEME ===================== */
+html.dark body {
   background-color: hsl(270, 47%, 7%) !important;
 }
 
 /* Links en color ámbar */
-.cl-message a {
+html.dark .cl-message a {
   color: #ffba3b !important;
 }
 
 /* Starter chips con estilo UPY */
-.cl-starter {
+html.dark .cl-starter {
   border-color: #382350 !important;
   background: hsl(270, 44%, 10%) !important;
 }
-.cl-starter:hover {
+
+html.dark .cl-starter:hover {
   border-color: #FFA300 !important;
   color: #FFA300 !important;
 }
+
+/* Invertir el color de los iconos de los Starters a blanco en modo oscuro */
+html.dark button[id^="starter-"] img {
+  filter: invert(1) brightness(2);
+}
+
+/* ===================== LIGHT THEME ===================== */
+html.light body {
+  background-color: hsl(0, 0%, 100%) !important;
+}
+
+/* Links en color violeta UPY */
+html.light .cl-message a {
+  color: #6d28d9 !important;
+}
+
+/* Starter chips en modo claro */
+html.light .cl-starter {
+  border-color: #ddd6fe !important;
+  background: hsl(0, 0%, 100%) !important;
+}
+
+html.light .cl-starter:hover {
+  border-color: #5D0EC0 !important;
+  color: #5D0EC0 !important;
+}
+
+/* Cambiar el logo y avatar a la version clara en el tema claro */
+html.light img[src*="logo_dark.png"] {
+  content: url("/public/logo_light.png");
+}
+
