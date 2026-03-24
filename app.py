@@ -1,4 +1,5 @@
 import chainlit as cl
+from core.utils.logger import get_logger
 from langfuse import observe
 from perplexity import Perplexity
 
@@ -11,6 +12,8 @@ from core.feedback.suggestions import FeedbackService
 from core.observability.tracing import TracingManager
 from core.security.rate_limiter import RateLimiter
 from core.supabase_vector_db.indexing_utils import decode_embedding
+
+logger = get_logger(__name__)
 
 retriever = DocumentRetriever()
 chat_service = ChatService()
@@ -91,6 +94,7 @@ async def handle_feedback(action: cl.Action):
                 content="Gracias! Tu sugerencia fue guardada correctamente.",
             ).send()
         except Exception:
+            logger.exception("Error al guardar sugerencia")
             await cl.Message(
                 content="Hubo un error al guardar tu sugerencia. Inténtalo de nuevo más tarde.",
             ).send()
@@ -160,7 +164,8 @@ async def on_message(message: cl.Message):
             actions=actions,
         ).send()
 
-    except Exception as e:
-        msg.content = f"Error al conectar con el servidor: {e}"
+    except Exception:
+        logger.exception("Error en el pipeline de on_message")
+        msg.content = "Ocurrió un error temporal. Inténtalo de nuevo en unos minutos."
         await msg.update()
         
