@@ -6,5 +6,7 @@ __pycache__/
 .git/
 docs/
 scripts/
+chroma_db/
+logs/
 CLAUDE.md
 PLAN.md
