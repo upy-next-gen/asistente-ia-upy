@@ -1,7 +1,11 @@
 import chainlit as cl
+from chainlit.server import app
 from core.utils.logger import get_logger
 from langfuse import observe
 from perplexity import Perplexity
+from starlette.requests import Request
+from starlette.responses import JSONResponse, HTMLResponse, RedirectResponse
+from starlette.routing import Route
 
 from core.config import settings
 from core.prompts import PromptManager
@@ -12,6 +16,7 @@ from core.feedback.suggestions import FeedbackService
 from core.observability.tracing import TracingManager
 from core.security.rate_limiter import RateLimiter
 from core.supabase_vector_db.indexing_utils import decode_embedding
+from core.auth.entra_id import get_entra_client, EntraIDConfigError, EntraIDAuthError
 
 logger = get_logger(__name__)
 
@@ -20,6 +25,115 @@ chat_service = ChatService()
 feedback_service = FeedbackService()
 rate_limiter = RateLimiter()
 pplx_client = Perplexity(api_key=settings.PERPLEXITY_API_KEY)
+
+
+# ────────────────────────────────────────────────────────────────
+# Auth routes (Entra ID OAuth2)
+# Routes must be inserted BEFORE Chainlit's SPA catch-all handler
+# so they are matched first by Starlette's router.
+# ────────────────────────────────────────────────────────────────
+
+
+async def auth_login(request: Request) -> JSONResponse:
+    """Build the Entra ID authorization URL and return it as JSON.
+
+    Returns a JSON error if Entra ID is not configured.
+    """
+    try:
+        client = get_entra_client()
+        auth_url = client.build_auth_url()
+        return JSONResponse({"auth_url": auth_url})
+    except EntraIDConfigError as exc:
+        logger.warning("Entra ID not configured: %s", exc)
+        return JSONResponse(
+            {"error": str(exc)},
+            status_code=503,
+        )
+
+
+async def auth_callback(request: Request):
+    """Handle the OAuth2 callback from Microsoft Entra ID.
+
+    Exchanges the authorization code for tokens, extracts user
+    identity, and returns a success page that closes itself.
+    """
+    code = request.query_params.get("code")
+    error = request.query_params.get("error")
+
+    if error:
+        error_desc = request.query_params.get("error_description", error)
+        logger.warning("Entra callback error: %s", error_desc)
+        return HTMLResponse(
+            _auth_result_page(success=False, message=error_desc),
+            status_code=400,
+        )
+
+    if not code:
+        return HTMLResponse(
+            _auth_result_page(success=False, message="No se recibió código de autorización."),
+            status_code=400,
+        )
+
+    try:
+        client = get_entra_client()
+        tokens = await client.exchange_code_for_tokens(code)
+        id_token = tokens.get("id_token", "")
+
+        if not id_token:
+            return HTMLResponse(
+                _auth_result_page(success=False, message="No se recibió id_token."),
+                status_code=400,
+            )
+
+        user = client.extract_user_from_id_token(id_token)
+        logger.info("User authenticated: %s (%s)", user.name, user.email)
+
+        return HTMLResponse(
+            _auth_result_page(
+                success=True,
+                message=f"¡Bienvenido, {user.name}! ({user.email})",
+            )
+        )
+
+    except (EntraIDConfigError, EntraIDAuthError) as exc:
+        logger.error("Auth callback failed: %s", exc)
+        return HTMLResponse(
+            _auth_result_page(success=False, message=str(exc)),
+            status_code=500,
+        )
+
+
+def _auth_result_page(success: bool, message: str) -> str:
+    """Generate a minimal HTML page shown inside the auth popup."""
+    icon = "✅" if success else "❌"
+    color = "#4ade80" if success else "#f87171"
+    return f"""
+    <!DOCTYPE html>
+    <html lang="es">
+    <head><meta charset="UTF-8"><title>Autenticación</title>
+    <style>
+        body {{ font-family: 'Outfit', 'Segoe UI', sans-serif;
+               display: flex; align-items: center; justify-content: center;
+               min-height: 100vh; margin: 0;
+               background: hsl(270, 47%, 7%); color: #f2f2f2; }}
+        .card {{ text-align: center; padding: 2rem; }}
+        .icon {{ font-size: 3rem; }}
+        p {{ margin-top: 1rem; color: {color}; }}
+        small {{ opacity: 0.5; }}
+    </style></head>
+    <body><div class="card">
+        <div class="icon">{icon}</div>
+        <p>{message}</p>
+        <small>Esta ventana se cerrará automáticamente…</small>
+    </div>
+    <script>setTimeout(()=>window.close(), 3000);</script>
+    </body></html>
+    """
+
+
+# Insert auth routes BEFORE Chainlit's SPA catch-all so they match first
+app.routes.insert(0, Route("/auth/login", auth_login, methods=["GET"]))
+app.routes.insert(1, Route("/auth/callback", auth_callback, methods=["GET"]))
 
 
 def embed_query(query_text: str) -> list[float]:

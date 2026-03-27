@@ -24,6 +24,10 @@ class Settings:
     RATE_LIMIT_WINDOW: int = 60
     RATE_LIMIT_MAX_REQUESTS: int = 10
     ENV: str = ""
+    ENTRA_TENANT_ID: str = ""
+    ENTRA_CLIENT_ID: str = ""
+    ENTRA_CLIENT_SECRET: str = ""
+    ENTRA_REDIRECT_URI: str = ""
     
     @classmethod
     def from_env(cls) -> "Settings":
@@ -37,6 +41,10 @@ class Settings:
             PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY"),
             EMBEDDING_MODEL=os.getenv("EMBEDDING_MODEL"),
             ENV=os.getenv("ENV"),
+            ENTRA_TENANT_ID=os.getenv("ENTRA_TENANT_ID", ""),
+            ENTRA_CLIENT_ID=os.getenv("ENTRA_CLIENT_ID", ""),
+            ENTRA_CLIENT_SECRET=os.getenv("ENTRA_CLIENT_SECRET", ""),
+            ENTRA_REDIRECT_URI=os.getenv("ENTRA_REDIRECT_URI", ""),
         )
 
         missing_str = [
