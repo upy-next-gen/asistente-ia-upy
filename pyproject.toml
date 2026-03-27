@@ -12,6 +12,7 @@ dependencies = [
     "perplexityai",
     "numpy",
     "rich",
+    "httpx>=0.28.1",
 ]
 
 [project.optional-dependencies]
