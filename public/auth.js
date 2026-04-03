@@ -135,18 +135,9 @@
         return;
       }
 
-      // If we got an auth URL, open it in a popup
+      // If we got an auth URL, open it in a new tab
       if (data.auth_url) {
-        const popup = window.open(
-          data.auth_url,
-          "EntraLogin",
-          "width=500,height=700,scrollbars=yes"
-        );
-        if (!popup) {
-          showError(
-            "El navegador bloqueó la ventana emergente. Permite popups e intenta de nuevo."
-          );
-        }
+        window.open(data.auth_url, "_blank");
         destroyModal();
       }
     } catch (err) {
