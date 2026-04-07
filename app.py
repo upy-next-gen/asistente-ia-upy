@@ -6,6 +6,7 @@ from core.prompts import PromptManager
 from core.rag.embedding import EmbeddingService
 from core.rag.retriever import DocumentRetriever
 from core.rag.context import ContextBuilder
+from core.rag.evaluator import RAGASEvaluator
 from core.llm.chat import ChatService
 from core.feedback.suggestions import FeedbackService
 from core.observability.tracing import TracingManager
@@ -19,6 +20,7 @@ chat_service = ChatService()
 feedback_service = FeedbackService()
 rate_limiter = RateLimiter()
 embedding_service = EmbeddingService()
+evaluator = RAGASEvaluator()
 
 
 @cl.set_starters
@@ -109,6 +111,7 @@ async def on_message(message: cl.Message):
 
     query_embedding = embedding_service.embed_query(message.content)
     rows = retriever.retrieve(query_embedding, top_k=settings.RETRIEVER_TOP_K)
+    rows = evaluator.rerank(rows)
     context = ContextBuilder.build(rows)
     user_message = PromptManager.build_user_message(message.content, context)
 
@@ -134,6 +137,9 @@ async def on_message(message: cl.Message):
         message_history.append({"role": "assistant", "content": full_response})
         cl.user_session.set("message_history", message_history)
 
+        scores = await evaluator.evaluate(message.content, full_response, rows)
+        TracingManager.score("faithfulness", scores["faithfulness"])
+
         actions = [
             cl.Action(
                 name="abrir_sugerencias",
@@ -151,4 +157,3 @@ async def on_message(message: cl.Message):
         logger.exception("Error en el pipeline de on_message")
         msg.content = "Ocurrió un error temporal. Inténtalo de nuevo en unos minutos."
         await msg.update()
-        

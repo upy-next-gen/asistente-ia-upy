@@ -21,7 +21,8 @@ class Settings(BaseSettings):
     RATE_LIMIT_WINDOW: int = 60
     RATE_LIMIT_MAX_REQUESTS: int = 10
     ENV: str = ""
-   
+    RAGAS_MIN_RELEVANCY: float = 0.45
+    RAGAS_TOP_FINAL: int = 3
 
     model_config = SettingsConfigDict(
         env_file=".env",
