@@ -1,10 +1,7 @@
-import os
-from dataclasses import dataclass
-from dotenv import load_dotenv
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-@dataclass
-class Settings:
+class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     LLM_BASE_URL: str = ""
     LLM_MODEL: str = ""
@@ -24,34 +21,13 @@ class Settings:
     RATE_LIMIT_WINDOW: int = 60
     RATE_LIMIT_MAX_REQUESTS: int = 10
     ENV: str = ""
-    
-    @classmethod
-    def from_env(cls) -> "Settings":
-        load_dotenv()
-        instance = cls(
-            OPENAI_API_KEY=os.getenv("OPENAI_API_KEY"),
-            LLM_BASE_URL=os.getenv("LLM_BASE_URL"),
-            LLM_MODEL=os.getenv("LLM_MODEL"),
-            SUPABASE_URL=os.getenv("SUPABASE_URL"),
-            SUPABASE_KEY=os.getenv("SUPABASE_KEY"),
-            PERPLEXITY_API_KEY=os.getenv("PERPLEXITY_API_KEY"),
-            EMBEDDING_MODEL=os.getenv("EMBEDDING_MODEL"),
-            ENV=os.getenv("ENV"),
-        )
+   
 
-        missing_str = [
-            key for key in (
-                "OPENAI_API_KEY", "LLM_BASE_URL", "LLM_MODEL",
-                "PERPLEXITY_API_KEY", "EMBEDDING_MODEL", "SUPABASE_URL", "SUPABASE_KEY", "ENV",
-            )
-            if not getattr(instance, key)
-        ]
-        missing = missing_str
-        if missing:
-            raise EnvironmentError(
-                f"Variables de entorno requeridas no configuradas: {missing}"
-            )
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
-        return instance
 
-settings = Settings.from_env()
+settings = Settings()
