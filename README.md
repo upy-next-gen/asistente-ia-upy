@@ -167,7 +167,7 @@ Adicionalmente, `TracingManager` registra scores numéricos (`retrieval_nodes`, 
 | `PERPLEXITY_API_KEY` | API key de Perplexity (embeddings) | — |
 | `EMBEDDING_MODEL` | Modelo de embeddings Perplexity | `pplx-embed-context-v1-0.6b` |
 | `SUPABASE_URL` | URL de Supabase PostgreSQL | — |
-| `SUPABASE_KEY` | Public key de Supabase | — |
+| `SUPABASE_KEY` | Key de runtime del chatbot (usar **Publishable key**) | — |
 | `EMBEDDING_DIM` | Dimensionalidad de embeddings | `1024` |
 | `SAFE_BATCH_SIZE` | Tamaño de batch para Perplexity API | `200` |
 | `MAX_CHUNKS_PER_REQUEST` | Máximo de chunks a recuperar | `20` |
@@ -196,25 +196,51 @@ Adicionalmente, `TracingManager` registra scores numéricos (`retrieval_nodes`, 
 1. **Crear `.env` con las credenciales:**
    ```bash
    SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_KEY=your-supabase-key
+   SUPABASE_KEY=your-publishable-key
    PERPLEXITY_API_KEY=your-perplexity-key
    DEEPSEEK_API_KEY=your-deepseek-key
    ```
 
 2. **Crear schema PostgreSQL** (en Supabase SQL Editor):
    ```bash
-   # Ejecutar: vector_supabase/sql/setup_pgvector.sql
+   # Ejecutar: context_docs/setup_pgvector.sql
    ```
 
-3. **Indexar documentos:**
+   Este script aplica RLS en tablas vectoriales, crea el rol fijo `chatbot_asker`
+   para el flujo anónimo del chatbot y limita el acceso de consulta a la función RPC
+   `match_documents`.
+
+3. **Indexar documentos (solo backend con Secret key):**
    ```bash
-   uv run python scripts/index_docs_supabase.py
+   SUPABASE_KEY=your-secret-key uv run python scripts/index_docs_supabase.py
    ```
 
-4. **Ejecutar chatbot:**
+4. **Ejecutar chatbot (con Publishable key):**
    ```bash
    uv run chainlit run app.py
    # Abre http://localhost:8000
+   ```
+
+5. **Validar seguridad en Supabase (SQL Editor):**
+   ```sql
+   -- RLS activo
+   select tablename, rowsecurity
+   from pg_tables
+   where schemaname = 'public'
+     and tablename in ('documents_metadata', 'documents_embeddings');
+
+   -- Politicas activas
+   select schemaname, tablename, policyname, roles, cmd
+   from pg_policies
+   where schemaname = 'public'
+     and tablename in ('documents_metadata', 'documents_embeddings');
+
+   -- Permiso RPC para rol fijo
+   select has_function_privilege(
+     'chatbot_asker',
+     'public.match_documents(vector,integer,double precision)',
+     'EXECUTE'
+   ) as chatbot_asker_can_execute_match_documents;
    ```
 
 ### Build y Run con Docker
