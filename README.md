@@ -167,7 +167,7 @@ Adicionalmente, `TracingManager` registra scores numéricos (`retrieval_nodes`, 
 | `PERPLEXITY_API_KEY` | API key de Perplexity (embeddings) | — |
 | `EMBEDDING_MODEL` | Modelo de embeddings Perplexity | `pplx-embed-context-v1-0.6b` |
 | `SUPABASE_URL` | URL de Supabase PostgreSQL | — |
-| `SUPABASE_KEY` | Key de runtime del chatbot (usar **Publishable key**) | — |
+| `SUPABASE_KEY` | Key de runtime del chatbot (usar **Secret key**) | — |
 | `EMBEDDING_DIM` | Dimensionalidad de embeddings | `1024` |
 | `SAFE_BATCH_SIZE` | Tamaño de batch para Perplexity API | `200` |
 | `MAX_CHUNKS_PER_REQUEST` | Máximo de chunks a recuperar | `20` |
@@ -196,7 +196,7 @@ Adicionalmente, `TracingManager` registra scores numéricos (`retrieval_nodes`, 
 1. **Crear `.env` con las credenciales:**
    ```bash
    SUPABASE_URL=https://your-project.supabase.co
-   SUPABASE_KEY=your-publishable-key
+   SUPABASE_KEY=your-secret-key
    PERPLEXITY_API_KEY=your-perplexity-key
    DEEPSEEK_API_KEY=your-deepseek-key
    ```
