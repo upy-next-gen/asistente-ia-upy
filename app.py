@@ -1,17 +1,16 @@
 import chainlit as cl
 from core.utils.logger import get_logger
 from langfuse import observe
-from perplexity import Perplexity
-
 from core.config import settings
 from core.prompts import PromptManager
+from core.rag.embedding import EmbeddingService
 from core.rag.retriever import DocumentRetriever
 from core.rag.context import ContextBuilder
 from core.llm.chat import ChatService
 from core.feedback.suggestions import FeedbackService
 from core.observability.tracing import TracingManager
 from core.security.rate_limiter import RateLimiter
-from core.supabase_vector_db.indexing_utils import decode_embedding
+from core.security.history import trim_history
 
 logger = get_logger(__name__)
 
@@ -19,23 +18,7 @@ retriever = DocumentRetriever()
 chat_service = ChatService()
 feedback_service = FeedbackService()
 rate_limiter = RateLimiter()
-pplx_client = Perplexity(api_key=settings.PERPLEXITY_API_KEY)
-
-
-def embed_query(query_text: str) -> list[float]:
-    response = pplx_client.contextualized_embeddings.create(
-        input=[[query_text]],
-        model=settings.EMBEDDING_MODEL,
-    )
-    return decode_embedding(response.data[0].data[0].embedding)
-
-
-def _trim_history(history: list[dict]) -> list[dict]:
-    system = history[:1]
-    conversation = history[1:]
-    if len(conversation) > settings.MAX_HISTORY_MESSAGES:
-        conversation = conversation[-settings.MAX_HISTORY_MESSAGES:]
-    return system + conversation
+embedding_service = EmbeddingService()
 
 
 @cl.set_starters
@@ -124,7 +107,7 @@ async def on_message(message: cl.Message):
         metadata={"query": message.content},
     )
 
-    query_embedding = embed_query(message.content)
+    query_embedding = embedding_service.embed_query(message.content)
     rows = retriever.retrieve(query_embedding, top_k=settings.RETRIEVER_TOP_K)
     context = ContextBuilder.build(rows)
     user_message = PromptManager.build_user_message(message.content, context)
@@ -133,7 +116,7 @@ async def on_message(message: cl.Message):
     TracingManager.score("context_length", float(len(context)))
 
     message_history.append({"role": "user", "content": user_message})
-    message_history = _trim_history(message_history)
+    message_history = trim_history(message_history)
     cl.user_session.set("message_history", message_history)
 
     msg = cl.Message(content="")
