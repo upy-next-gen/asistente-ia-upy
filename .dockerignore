@@ -10,3 +10,4 @@ chroma_db/
 .github/
 context_docs/
 README.md
+.env
