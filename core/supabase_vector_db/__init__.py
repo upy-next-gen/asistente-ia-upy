@@ -1,3 +1,3 @@
-from core.supabase_vector_db.retriever import SupabaseVectorRetriever
+from core.supabase_vector_db.store import SupabaseVectorStore
 
-__all__ = ["SupabaseVectorRetriever"]
+__all__ = ["SupabaseVectorStore"]

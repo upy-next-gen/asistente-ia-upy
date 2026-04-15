@@ -2,7 +2,12 @@ venv/
 .venv/
 __pycache__/
 *.pyc
-.env
 .git/
 .chainlit/.langchain.db
 .chainlit/translations/
+docs/
+chroma_db/
+.github/
+context_docs/
+README.md
+.env

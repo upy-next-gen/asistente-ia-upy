@@ -10,3 +10,6 @@ chroma_db/
 logs/
 CLAUDE.md
 PLAN.md
+.github/
+context_docs/
+README.md
