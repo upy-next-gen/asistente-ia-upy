@@ -12,6 +12,7 @@ dependencies = [
     "perplexityai",
     "numpy",
     "rich",
+    "ragas>=0.2",
 ]
 
 [project.optional-dependencies]
